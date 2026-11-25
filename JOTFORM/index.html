@@ -1,0 +1,455 @@
+
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sifir & Kira Ceria</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --sky:#E0F4FF; --cream:#FFFDF7;
+  --blue:#38BDF8; --yellow:#FACC15;
+  --green:#4ADE80; --coral:#FB7185;
+  --ink:#26415B; --muted:#68829A;
+}
+* { box-sizing:border-box }
+body {
+  margin:0; color:var(--ink);
+  background:linear-gradient(155deg,var(--sky),var(--cream));
+  font-family:'Nunito',sans-serif;
+  overflow-x:hidden;
+}
+.wrap { max-width:950px; margin:auto; padding:16px }
+header {
+  text-align:center; padding:24px 15px;
+  background:linear-gradient(135deg,#70D2FF,#8CE6D0,#FFE78A);
+  border:4px solid white; border-radius:28px;
+  box-shadow:0 8px 24px #245b8012;
+}
+h1,h2,h3 { font-family:'Fredoka',sans-serif }
+h1 { font-size:clamp(27px,6vw,44px); margin:8px 0;color:#164C72 }
+header p { font-weight:900;margin:0 }
+.progress {
+  background:white; padding:12px;border-radius:16px;
+  margin:15px 0;box-shadow:0 5px 18px #245b8010;
+}
+.progress-info { display:flex;justify-content:space-between;font-size:13px;font-weight:900;margin-bottom:7px }
+.track { height:13px;background:#e0edf5;border-radius:20px;overflow:hidden }
+.fill { height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--green),var(--yellow));transition:.5s }
+section {
+  background:white;border-radius:23px;padding:20px;
+  margin:18px 0;box-shadow:0 8px 24px #245b8010;
+}
+.heading { display:flex;gap:12px;align-items:center }
+.badge {
+  background:#e2f6ff;color:#1888c0;border-radius:14px;
+  min-width:42px;height:42px;display:grid;place-items:center;
+  font:700 22px Fredoka;
+}
+.heading h2 { margin:0;font-size:25px }
+.heading p { margin:4px 0;color:var(--muted);font-weight:700;font-size:14px }
+button {
+  border:0;border-radius:14px;padding:12px 15px;
+  font:900 15px Nunito;min-height:45px;cursor:pointer;
+  color:#24445d;transition:.15s;
+}
+button:hover { transform:translateY(-2px);filter:brightness(1.03) }
+button:active { transform:translateY(1px) }
+button:focus-visible,input:focus-visible { outline:3px solid #167bc1 }
+.blue { background:var(--blue);color:white }
+.yellow { background:var(--yellow) }
+.green { background:var(--green) }
+.soft { background:#eaf6fd }
+.coral { background:#ffe0e7 }
+.buttons { display:flex;gap:10px;flex-wrap:wrap;margin-top:14px }
+.buttons button { flex:1 }
+
+.digits {
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:10px;max-width:600px;margin:18px auto;
+}
+.digit {
+  min-height:100px;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;border-radius:18px;
+  box-shadow:inset 0 -4px #00000008;
+}
+.digit strong { font:700 43px Fredoka }
+.digit span { font-weight:900;font-size:13px }
+.digit:nth-child(1){background:#B9E9FF}
+.digit:nth-child(2){background:#FFEAA4}
+.digit:nth-child(3){background:#C8F7D5}
+.digit:nth-child(4){background:#FFD0DC}
+.digit.selected { outline:3px solid #58bce9;transform:translateY(-4px) }
+.explain {
+  background:#f2fbff;border:2px dashed #b5e5f7;
+  padding:15px;border-radius:17px;text-align:center;min-height:82px;
+}
+.explain h3 { margin:0 0 6px;font-size:21px }
+.explain p { margin:0;font-weight:800 }
+.decomp { text-align:center;font:700 24px Fredoka;color:#216c9a;margin:15px 0 }
+.tip { background:#fff5c9;padding:10px;border-radius:12px;text-align:center;font-weight:900 }
+
+.tabs { display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 }
+.tabs button { flex:1;background:#edf7ff;min-width:150px }
+.tabs button.active { background:var(--blue);color:white }
+.math-card { background:#f7fcff;border:2px solid #d7f0fc;border-radius:18px;padding:16px }
+.work { max-width:330px;margin:auto;font-family:Fredoka }
+.labels,.rowdigits,.carry,.result {
+  display:grid;grid-template-columns:repeat(4,1fr);text-align:center;gap:4px
+}
+.labels { font:900 12px Nunito;color:#7890a3;margin-bottom:8px }
+.carry { height:24px;color:var(--coral);font-weight:bold;font-size:18px }
+.rowdigits { font-size:36px;line-height:1.3 }
+.cell { border-radius:8px;transition:.2s }
+.cell.active { background:#fff0ad;outline:2px solid #f4ca35 }
+.operator { position:relative }
+.operator::before {
+  content:attr(data-op);position:absolute;left:-20px;
+  font-size:27px;top:0;
+}
+.underline { border-bottom:4px solid #26415b;margin:5px 0 }
+.result { font:700 36px Fredoka;color:#169454;min-height:45px }
+.stepbox {
+  background:#fff9df;padding:15px;border-radius:16px;
+  margin-top:14px;min-height:90px;font-weight:800;line-height:1.55
+}
+.stepbox strong { font:700 20px Fredoka }
+.step-title { color:#b77c00;font:700 17px Fredoka }
+
+.practice-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px }
+.practice { background:#f9fdff;border:2px solid #dff3fc;border-radius:18px;padding:15px }
+.practice h3 { margin:0;font-size:20px }
+.question { font:700 25px Fredoka;margin:10px 0 }
+.answer { display:flex;gap:8px }
+input {
+  width:100%;min-width:0;border:2px solid #d5e8f2;
+  border-radius:12px;padding:11px;font:900 20px Nunito;
+}
+.hint { background:#fff5cb;padding:12px;border-radius:13px;margin-top:10px;font-weight:800;font-size:14px;line-height:1.5 }
+.feedback { min-height:50px;margin-top:10px;font-weight:900;line-height:1.4 }
+.stars { color:#e9a900;font-size:23px }
+.hidden { display:none!important }
+footer { text-align:center;font-weight:900;color:var(--muted);padding:15px }
+
+@media(max-width:600px) {
+  .wrap{padding:10px}
+  section{padding:15px}
+  .digits{gap:6px}
+  .digit{min-height:88px}
+  .digit strong{font-size:32px}
+  .practice-grid{grid-template-columns:1fr}
+  .rowdigits,.result{font-size:30px}
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<header>
+  <div style="font-size:30px">🌈 ✨ 🧮 ✨</div>
+  <h1>Sifir &amp; Kira Ceria</h1>
+  <p>Nota Interaktif Tambah &amp; Tolak Lingkungan 10,000</p>
+</header>
+
+<div class="progress">
+  <div class="progress-info">
+    <span>🚀 Misi belajar kita</span>
+    <span id="progressText">0 daripada 3 misi</span>
+  </div>
+  <div class="track"><div class="fill" id="progressFill"></div></div>
+</div>
+
+<!-- PERINGKAT 1 -->
+<section id="stage1">
+  <div class="heading">
+    <div class="badge">1</div>
+    <div>
+      <h2>Kenali Nilai Tempat</h2>
+      <p>Tekan setiap blok nombor untuk meneroka!</p>
+    </div>
+  </div>
+
+  <div class="digits">
+    <button class="digit" data-digit="2" data-place="Ribu" data-value="2,000">
+      <strong>2</strong><span>Ribu</span>
+    </button>
+    <button class="digit" data-digit="4" data-place="Ratus" data-value="400">
+      <strong>4</strong><span>Ratus</span>
+    </button>
+    <button class="digit" data-digit="8" data-place="Puluh" data-value="80">
+      <strong>8</strong><span>Puluh</span>
+    </button>
+    <button class="digit" data-digit="5" data-place="Sa" data-value="5">
+      <strong>5</strong><span>Sa</span>
+    </button>
+  </div>
+
+  <div class="explain" id="placeExplain">
+    <h3>👆 Pilih satu blok nombor!</h3>
+    <p>Kita akan lihat nilai digitnya.</p>
+  </div>
+
+  <div class="decomp">2,485 = 2,000 + 400 + 80 + 5</div>
+  <div class="tip">💡 Dari kanan ke kiri: Sa → Puluh → Ratus → Ribu</div>
+</section>
+
+<!-- PERINGKAT 2 -->
+<section id="stage2">
+  <div class="heading">
+    <div class="badge">2</div>
+    <div>
+      <h2>Jom Kira Langkah Demi Langkah</h2>
+      <p>Kita mula dari rumah Sa. Satu langkah pada satu masa!</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button id="addTab" class="active" onclick="selectOperation('add')">
+      ➕ Tambah Mengumpul Semula
+    </button>
+    <button id="subTab" onclick="selectOperation('sub')">
+      ➖ Tolak Mengumpul Semula
+    </button>
+  </div>
+
+  <div class="math-card">
+    <div class="work">
+      <div class="labels">
+        <span>Ribu</span><span>Ratus</span><span>Puluh</span><span>Sa</span>
+      </div>
+      <div class="carry" id="carryRow"></div>
+      <div class="rowdigits" id="topNumber"></div>
+      <div class="rowdigits operator" id="bottomNumber"></div>
+      <div class="underline"></div>
+      <div class="result" id="resultRow"></div>
+    </div>
+  </div>
+
+  <div class="stepbox" id="stepText">
+    <span class="step-title">🌟 Sedia?</span><br>
+    Tekan “Langkah Seterusnya” untuk mula mengira dari rumah Sa.
+  </div>
+
+  <div class="buttons">
+    <button class="blue" id="nextStep" onclick="nextStep()">➡️ Langkah Seterusnya</button>
+    <button class="soft" onclick="resetSteps()">🔄 Ulang Semula</button>
+  </div>
+</section>
+
+<!-- PERINGKAT 3 -->
+<section id="stage3">
+  <div class="heading">
+    <div class="badge">3</div>
+    <div>
+      <h2>Cuba Dengan Bantuan Petunjuk</h2>
+      <p>Awak boleh buat! Isi jawapan dan semak.</p>
+    </div>
+  </div>
+
+  <div class="practice-grid">
+    <div class="practice">
+      <h3>🌻 Misi Tambah</h3>
+      <div class="question">3,146 + 1,238</div>
+      <p><b>Apakah digit hasil tambah di rumah Puluh?</b></p>
+
+      <div class="answer">
+        <input id="answerAdd" inputmode="numeric" maxlength="1" placeholder="Digit">
+        <button class="green" onclick="checkAnswer('add')">Semak</button>
+      </div>
+
+      <button class="yellow" style="margin-top:10px" onclick="showHint('add')">
+        💡 Perlukan Petunjuk?
+      </button>
+
+      <div class="hint hidden" id="hintAdd">
+        1. Sa: 6 + 8 = 14, tulis 4 dan kumpul 1 puluh.<br>
+        2. Puluh: 4 + 3 + 1 = <b>8</b>.<br>
+        Jadi, digit di rumah Puluh ialah 8.
+      </div>
+      <div class="feedback" id="feedbackAdd"></div>
+    </div>
+
+    <div class="practice">
+      <h3>🐣 Misi Tolak</h3>
+      <div class="question">4,532 − 1,217</div>
+      <p><b>Apakah digit hasil tolak di rumah Sa?</b></p>
+
+      <div class="answer">
+        <input id="answerSub" inputmode="numeric" maxlength="1" placeholder="Digit">
+        <button class="green" onclick="checkAnswer('sub')">Semak</button>
+      </div>
+
+      <button class="yellow" style="margin-top:10px" onclick="showHint('sub')">
+        💡 Perlukan Petunjuk?
+      </button>
+
+      <div class="hint hidden" id="hintSub">
+        1. 2 tak cukup untuk tolak 7, jadi pinjam 1 puluh.<br>
+        2. 2 sa menjadi 12 sa.<br>
+        3. 12 − 7 = <b>5</b>.
+      </div>
+      <div class="feedback" id="feedbackSub"></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  💛 Terus cuba, terus bersinar! Matematik jadi ceria apabila kita belajar sedikit demi sedikit. 💛
+</footer>
+</div>
+
+<script>
+const steps = {
+ add:{
+  a:"2485",b:"1367",op:"+",answer:"3852",
+  data:[
+   {place:"Sa",calc:"5 + 7 = 12",carry:["","","1",""],
+    digits:["","","","2"],
+    explain:"5 sa + 7 sa = 12 sa. Kita tulis 2 di rumah Sa dan kumpul 1 puluh.",
+    write:"Tulis 2 di rumah Sa. Kumpul 1 puluh."},
+   {place:"Puluh",calc:"8 + 6 + 1 = 15",carry:["","1","",""],
+    digits:["","","5","2"],
+    explain:"8 puluh + 6 puluh + 1 puluh yang dikumpul = 15 puluh. Tulis 5, kumpul 1 ratus.",
+    write:"Tulis 5 di rumah Puluh. Kumpul 1 ratus."},
+   {place:"Ratus",calc:"4 + 3 + 1 = 8",carry:["","","",""],
+    digits:["","8","5","2"],
+    explain:"4 ratus + 3 ratus + 1 ratus yang dikumpul = 8 ratus.",
+    write:"Tulis 8 di rumah Ratus."},
+   {place:"Ribu",calc:"2 + 1 = 3",carry:["","","",""],
+    digits:["3","8","5","2"],
+    explain:"2 ribu + 1 ribu = 3 ribu. Jawapan kita ialah 3,852!",
+    write:"Tulis 3 di rumah Ribu. Selesai!"}
+  ]
+ },
+ sub:{
+  a:"5423",b:"2186",op:"−",answer:"3237",
+  data:[
+   {place:"Sa",calc:"13 − 6 = 7",carry:["","","","1"],
+    digits:["","","","7"],
+    explain:"3 sa tidak cukup untuk tolak 6. Pinjam 1 puluh, jadi 13 − 6 = 7.",
+    write:"3 sa menjadi 13 sa. Rumah Puluh tinggal 1."},
+   {place:"Puluh",calc:"11 − 8 = 3",carry:["","","1",""],
+    digits:["","","3","7"],
+    explain:"1 puluh tidak cukup untuk tolak 8. Pinjam 1 ratus, jadi 11 − 8 = 3.",
+    write:"1 puluh menjadi 11 puluh. Rumah Ratus tinggal 3."},
+   {place:"Ratus",calc:"3 − 1 = 2",carry:["","","",""],
+    digits:["","2","3","7"],
+    explain:"3 ratus − 1 ratus = 2 ratus. Tulis 2 di rumah Ratus.",
+    write:"Tulis 2 di rumah Ratus."},
+   {place:"Ribu",calc:"5 − 2 = 3",carry:["","","",""],
+    digits:["3","2","3","7"],
+    explain:"5 ribu − 2 ribu = 3 ribu. Jawapan kita ialah 3,237!",
+    write:"Tulis 3 di rumah Ribu. Selesai!"}
+  ]
+ }
+};
+
+let operation="add";
+let stepIndex=0;
+const completedStages=new Set();
+
+function updateProgress(){
+ const n=completedStages.size;
+ document.getElementById("progressText").textContent=n+" daripada 3 misi";
+ document.getElementById("progressFill").style.width=(n/3*100)+"%";
+}
+
+document.querySelectorAll(".digit").forEach(btn=>{
+ btn.addEventListener("click",()=>{
+  document.querySelectorAll(".digit").forEach(x=>x.classList.remove("selected"));
+  btn.classList.add("selected");
+  const d=btn.dataset;
+  document.getElementById("placeExplain").innerHTML=
+   `<h3>✨ Digit ${d.digit} di rumah ${d.place}</h3>
+   <p>Nilai digit ini ialah <strong>${d.value}</strong> dalam nombor 2,485.</p>`;
+  completedStages.add(1);
+  updateProgress();
+ });
+});
+
+function selectOperation(op){
+ operation=op;stepIndex=0;
+ document.getElementById("addTab").classList.toggle("active",op==="add");
+ document.getElementById("subTab").classList.toggle("active",op==="sub");
+ renderSteps();
+}
+
+function renderSteps(){
+ const d=steps[operation];
+ const s=d.data[stepIndex];
+ const a=d.a.split("");
+ const b=d.b.split("");
+
+ document.getElementById("topNumber").innerHTML=a.map((v,i)=>
+  `<span class="cell ${i===3-stepIndex?"active":""}">${v}</span>`
+ ).join("");
+
+ document.getElementById("bottomNumber").dataset.op=d.op;
+ document.getElementById("bottomNumber").innerHTML=b.map((v,i)=>
+  `<span class="cell ${i===3-stepIndex?"active":""}">${v}</span>`
+ ).join("");
+
+ document.getElementById("carryRow").innerHTML=
+  s.carry.map(v=>`<span>${v}</span>`).join("");
+
+ document.getElementById("resultRow").innerHTML=
+  s.digits.map(v=>`<span>${v}</span>`).join("");
+
+ document.getElementById("stepText").innerHTML=
+  `<span class="step-title">⭐ Langkah ${stepIndex+1}: Rumah ${s.place}</span>
+  <br><strong>${s.calc}</strong><br>${s.explain}
+  <br><span style="color:#4384a5">${s.write}</span>`;
+
+ const btn=document.getElementById("nextStep");
+ btn.textContent=stepIndex===3?"🎉 Selesai!":"➡️ Langkah Seterusnya";
+ btn.disabled=stepIndex===3;
+ btn.style.opacity=stepIndex===3?".6":"1";
+}
+
+function nextStep(){
+ if(stepIndex<3){
+  stepIndex++;
+  renderSteps();
+ }
+ if(stepIndex===3){
+  completedStages.add(2);
+  updateProgress();
+ }
+}
+
+function resetSteps(){
+ stepIndex=0;
+ renderSteps();
+}
+
+function showHint(which){
+ document.getElementById(which==="add"?"hintAdd":"hintSub")
+  .classList.remove("hidden");
+}
+
+function checkAnswer(which){
+ const input=document.getElementById(which==="add"?"answerAdd":"answerSub");
+ const feedback=document.getElementById(which==="add"?"feedbackAdd":"feedbackSub");
+ const correct=which==="add"?"8":"5";
+
+ if(input.value.trim()===correct){
+  feedback.innerHTML=`<span class="stars">⭐ ⭐ ⭐</span><br>
+  Hebat! Tepat sekali! Digit jawapan ialah ${correct}.`;
+  input.style.borderColor="#4ade80";
+  completedStages.add(3);
+  updateProgress();
+ } else {
+  feedback.innerHTML="🌱 Hampir betul! Cuba fikir semula atau tekan butang petunjuk.";
+  input.style.borderColor="#fb7185";
+  input.focus();
+ }
+}
+
+renderSteps();
+updateProgress();
+</script>
+</body>
+</html>
